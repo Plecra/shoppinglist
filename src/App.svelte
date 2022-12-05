@@ -58,7 +58,6 @@
       }}
     />
   {/each}
-  <div>{height}</div>
   <nav style="bottom: calc(100% - {height}px);">
     <button on:click={() => {
       for (let i = tasks.length - 1; i >= 0; i--) {
