@@ -74,6 +74,11 @@
       tasks = tasks;
       lastlocalupdate = Date.now();
     }}>🗑</button>
+    <button on:click={() => {
+      tasks.push({ title: "", id: randid(), selected: false })
+      tasks = tasks;
+      lastlocalupdate = Date.now();
+    }}>+</button>
   </nav>
 </main>
 

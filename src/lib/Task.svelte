@@ -31,13 +31,13 @@
         //  - and the user presses enter
         // on android virtual keyboards, we dont get real input events
         // instead, we received a insertCompositionText with the current content
-        console.log(e);
-        if (e.inputType === "insertCompositionText" && typeof e.data === "string" &&
-            e.data === title.slice(title.length - e.data.length)
-        ) {
-            e.preventDefault();
-            dispatch("gotonext")
-        }
+        // console.log(e);
+        // if (e.inputType === "insertCompositionText" && typeof e.data === "string" &&
+        //     e.data === title.slice(title.length - e.data.length)
+        // ) {
+        //     e.preventDefault();
+        //     dispatch("gotonext")
+        // }
     }
     // svelte doesn't have the right types here
     const untyped_oninput = oninput as any;
