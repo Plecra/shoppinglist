@@ -7,7 +7,8 @@ const firebaseApp = initializeApp({
   databaseURL: "https://shoppinglist-31849-default-rtdb.europe-west1.firebasedatabase.app/",
 });
 const database = getDatabase(firebaseApp);
-const items = ref(database, "items");
+const refname = import.meta.env.DEV ? "devitems" : "items";
+const items = ref(database, refname);
 // const new_item = push(items);
 // set(new_item, "Apples");
 
