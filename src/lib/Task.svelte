@@ -5,7 +5,7 @@
     export let title: string;
     export let selected: boolean;
     const dispatch = createEventDispatcher();
-    const selected_width = 1;
+    const selected_width = 2;
     
     const offset = tweened(0, {
         duration(a, b) { return (a - b); }
@@ -42,7 +42,8 @@
     // svelte doesn't have the right types here
     const untyped_oninput = oninput as any;
 </script>
-
+<div>
+    <span>✔️</span>
 <input bind:this={me} style="transform: translateX({$offset}px)"
     inputmode="search" 
     
@@ -80,12 +81,23 @@
         }
     }}
     bind:value={title}/>
+</div>
 <style>
+div {
+    position: relative;
+    display: flex;
+}
+span {
+    font-size: 1.8em;
+    padding: 0.4em;
+    position: absolute;
+}
   input {
     font-size: 1.8em;
 
     outline: none;
     border: none;
+    width: 100%;
     padding: 0.4em;
     transition: transform 100ms;
   }
