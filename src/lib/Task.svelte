@@ -62,7 +62,6 @@
     }}
     use:focusOnCreation
     on:keydown={event => {
-        console.log(event);
         switch (event.key) {
         case "Enter":
             event.preventDefault();
