@@ -6,16 +6,27 @@
   function randid() {
     return Math.floor(Math.random() * 10000)
   }
-  let have_synced = false;
-  let tasks = [{ title: "", id: randid(), selected: false }];
-  onDestroy(onValue(dbRef, function(v) {
-    tasks = v.val().map(({ title, id }) => ({ title, id, selected: false }));
-    have_synced = true;
-  }))
+  let tasks = [{ title: "Loading...", id: randid(), selected: false }];
+  let lastlocalupdate = 0;
+  let lastremoterecording = 0;
+  let loaded = false;
   $: {
-    if (have_synced)
-      set(dbRef, tasks.map(({ title, id }) => ({ title, id })))
+    const need_to_send = lastlocalupdate > lastremoterecording;
+    if (loaded) lastlocalupdate = Date.now();
+    if (need_to_send) {
+      set(dbRef, { recordedat: lastlocalupdate, values: tasks.map(({ title, id }) => ({ title, id })) });
+      lastremoterecording = lastlocalupdate;
+    }
   }
+  lastlocalupdate = 0;
+  onDestroy(onValue(dbRef, function(snapshot) {
+    const val = snapshot.val();
+    lastremoterecording = val.recordedat;
+    if (lastlocalupdate < lastremoterecording) {
+      tasks = snapshot.val().values.map(({ title, id }) => ({ title, id, selected: false }));
+    }
+    loaded = true;
+  }))
   let me;
 </script>
 
