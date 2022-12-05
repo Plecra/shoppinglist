@@ -21,15 +21,25 @@
   lastlocalupdate = 0;
   onDestroy(onValue(dbRef, function(snapshot) {
     const val = snapshot.val();
+    loaded = true;
+    if (val === null) return;
     lastremoterecording = val.recordedat;
     if (lastlocalupdate < lastremoterecording) {
-      tasks = snapshot.val().values.map(({ title, id }) => ({ title, id, selected: false }));
+      const newtasks = snapshot.val().values.map(({ title, id }) => ({ title, id, selected: false }));
+      for (const task of tasks) {
+        for (const newtask of newtasks) {
+          if (newtask.id === task.id) newtask.selected = task.selected;
+        }
+      }
+      tasks = newtasks;
+      lastlocalupdate = lastremoterecording;
     }
-    loaded = true;
   }))
   let me;
+  let height = window.visualViewport.height;
 </script>
 
+<svelte:window on:resize={e => height = window.visualViewport.height}/>
 <main bind:this={me}>
   <!-- {#each tasks as { title, selected, id }, i (id)} -->
   {#each tasks as { title, selected, id }, i (id)}
@@ -48,9 +58,38 @@
       }}
     />
   {/each}
+  <div>{height}</div>
+  <nav style="bottom: calc(100% - {height}px);">
+    <button on:click={() => {
+      for (let i = tasks.length - 1; i >= 0; i--) {
+        if (tasks[i].selected) {
+          tasks.splice(i, 1);
+          
+        }
+      }
+      tasks = tasks;
+      lastlocalupdate = Date.now();
+    }}>🗑</button>
+  </nav>
 </main>
 
 <style>
+  nav {
+    position: fixed;
+    width: 100%;
+    left: 0;
+    display: flex;
+    flex-direction: row-reverse;
+    border-top: grey 1px solid;
+    background: white;
+  }
+  button {
+    background: none;
+    
+    padding: 1.6em;
+    border: none;
+    border-left: grey 1px solid
+  }
   main {
     display: flex;
     flex-direction: column;
