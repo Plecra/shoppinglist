@@ -1,8 +1,10 @@
 <script lang="ts">
   import { onValue, set, type DatabaseReference } from "firebase/database";
   import { onDestroy } from "svelte";
+  import type { Readable } from "svelte/store";
   import Task from "./lib/Task.svelte";
   export let dbRef: DatabaseReference;
+  export let connected: Readable<boolean>;
   function randid() {
     return Math.floor(Math.random() * 10000)
   }
@@ -40,6 +42,9 @@
 </script>
 
 <svelte:window on:resize={e => height = window.visualViewport.height}/>
+{#if !$connected}
+  <div class="disconnected">We are not connected</div>
+{/if}
 <main bind:this={me}>
   <!-- {#each tasks as { title, selected, id }, i (id)} -->
   {#each tasks as { title, selected, id }, i (id)}
@@ -73,6 +78,18 @@
 </main>
 
 <style>
+  .disconnected {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 70%);
+    z-index: 100;
+    color: white;
+    text-align: center;
+    vertical-align: center;
+  }
   nav {
     position: fixed;
     width: 100%;
