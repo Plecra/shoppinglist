@@ -1,8 +1,12 @@
 import './app.css'
 import App from './App.svelte'
+const app = document.createElement('div');
+new App({ target: app });
 
-const app = new App({
-  target: document.getElementById('app')
-})
+if (document.readyState === "loading") document.addEventListener("readystatechange", ready, { once: true })
+else ready.call(document, null)
 
-export default app
+function ready(_) {
+  this.body.append(app);
+}
+

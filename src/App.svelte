@@ -1,58 +1,37 @@
 <script lang="ts">
-  import svelteLogo from './assets/svelte.svg'
-  import Counter from './lib/Counter.svelte'
-  const items = ["one", "two"];
+  import Task from "./lib/Task.svelte";
+
+  function randid() {
+    return Math.floor(Math.random() * 10000)
+  }
+  let tasks = [{ title: "One", id: randid(), selected: false }];
+  let me;
 </script>
 
-<main>
-  <div>
-    <a href="https://vitejs.dev" target="_blank" rel="noreferrer"> 
-      <img src="/vite.svg" class="logo" alt="Vite Logo" />
-    </a>
-    <a href="https://svelte.dev" target="_blank" rel="noreferrer"> 
-      <img src={svelteLogo} class="logo svelte" alt="Svelte Logo" />
-    </a>
-  </div>
-  <h1>Vite + Svelte</h1>
+<main bind:this={me}>
+  {#each tasks as { title, selected, id }, i (id)}
+    <Task bind:title bind:selected
+      on:gotonext={() => {
+        tasks.splice(i + 1, 0, { title: "", id: randid(), selected: false });
+        tasks = tasks;
+      }}
+      on:destroy={() => {
+        tasks.splice(i, 1);
+        tasks = tasks;
 
-  <div class="card">
-    <Counter />
-  </div>
-  <ul id="items">
-    {#each items as item}
-      <li>
-        <input type="checkbox"/>
-        {item}
-      </li>
-    {/each}
-  </ul>
-
-  <p>
-    Check out <a href="https://github.com/sveltejs/kit#readme" target="_blank" rel="noreferrer">SvelteKit</a>, the official Svelte app framework powered by Vite!
-  </p>
-
-  <p class="read-the-docs">
-    Click on the Vite and Svelte logos to learn more
-  </p>
+        // Quick hack to give us focus where we want it
+        const prev_child = me.querySelector(`:nth-child(${i})`);
+        if (prev_child) prev_child.focus();
+      }}
+    />
+  {/each}
 </main>
 
 <style>
-  #items {
-    text-align: left;
-    list-style: none;
-  }
-  .logo {
-    height: 6em;
-    padding: 1.5em;
-    will-change: filter;
-  }
-  .logo:hover {
-    filter: drop-shadow(0 0 2em #646cffaa);
-  }
-  .logo.svelte:hover {
-    filter: drop-shadow(0 0 2em #ff3e00aa);
-  }
-  .read-the-docs {
-    color: #888;
+  main {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    overflow: hidden;
   }
 </style>
