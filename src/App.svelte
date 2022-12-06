@@ -53,6 +53,14 @@
   <!-- {#each tasks as { title, selected, id }, i (id)} -->
   {#each tasks as { title, selected, id }, i (id)}
     <Task bind:title bind:selected
+    on:goup={() => {
+      tasks.splice(i - 1,0, ...tasks.splice(i, 1));
+      tasks = tasks;
+    }}
+    on:godown={() => {
+      tasks.splice(i + 1,0, ...tasks.splice(i, 1));
+      tasks = tasks;
+    }}
       on:gotonext={() => {
         tasks.splice(i + 1, 0, { title: "", id: randid(), selected: false });
         tasks = tasks;

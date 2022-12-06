@@ -32,6 +32,22 @@
 </script>
 <div>
     <span>✔️</span>
+    <div>
+        <div>
+            <button on:click={
+                function(e) {
+                    dispatch("goup");
+                }
+            }>^</button>
+            <button on:click={
+                function(e) {
+                    dispatch("godown");
+
+                //   tasks.splice(i - 1,0, ...tasks.splice(i, 1));
+                //   tasks = tasks;
+                }
+              }>v</button>
+        </div>
 <input bind:this={me} style="transform: translateX({$offset}px)"
     inputmode="search" 
     
@@ -73,16 +89,31 @@
         }
     }}
     bind:value={title}/>
+    </div>
 </div>
 <style>
 div {
     position: relative;
     display: flex;
+    background: white;
 }
 span {
     font-size: 1.8em;
     padding: 0.4em;
     position: absolute;
+}
+div>div>div {
+    display: flex;
+    flex-direction: column;
+}
+button {
+    font-size: 1.6em;
+    line-height: 0.4em;
+    height: 50%;
+    box-sizing: border-box;
+    border: none;
+    background: none;
+
 }
   input {
     font-size: 1.8em;
