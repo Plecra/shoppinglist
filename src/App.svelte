@@ -39,6 +39,7 @@
     wejustgotamessagefromtheserver = true;
   }))
   let me;
+  let footer;
   if ("virtualKeyboard" in navigator) {
     // @ts-ignore
     navigator.virtualKeyboard.overlaysContent = true;
