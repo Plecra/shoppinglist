@@ -39,10 +39,12 @@
     wejustgotamessagefromtheserver = true;
   }))
   let me;
-  let height = window.visualViewport.height;
+  if ("virtualKeyboard" in navigator) {
+    // @ts-ignore
+    navigator.virtualKeyboard.overlaysContent = true;
+  }
 </script>
 
-<svelte:window on:resize={e => height = window.visualViewport.height}/>
 {#if !$connected}
   <div class="disconnected">We are not connected</div>
 {/if}
@@ -64,24 +66,24 @@
       }}
     />
   {/each}
-  <nav style="bottom: calc(100% - {height}px);">
-    <button on:click={() => {
-      for (let i = tasks.length - 1; i >= 0; i--) {
-        if (tasks[i].selected) {
-          tasks.splice(i, 1);
-          
-        }
-      }
-      tasks = tasks;
-      lastlocalupdate = Date.now();
-    }}>🗑</button>
-    <button on:click={() => {
-      tasks.push({ title: "", id: randid(), selected: false })
-      tasks = tasks;
-      lastlocalupdate = Date.now();
-    }}>+</button>
-  </nav>
 </main>
+<nav bind:this={footer}>
+  <button on:click={() => {
+    for (let i = tasks.length - 1; i >= 0; i--) {
+      if (tasks[i].selected) {
+        tasks.splice(i, 1);
+        
+      }
+    }
+    tasks = tasks;
+    lastlocalupdate = Date.now();
+  }}>🗑</button>
+  <button on:click={() => {
+    tasks.push({ title: "", id: randid(), selected: false })
+    tasks = tasks;
+    lastlocalupdate = Date.now();
+  }}>+</button>
+</nav>
 
 <style>
   .disconnected {
@@ -100,6 +102,7 @@
     position: fixed;
     width: 100%;
     left: 0;
+    bottom: env(keyboard-inset-height, 0px);
     display: flex;
     flex-direction: row-reverse;
     border-top: grey 1px solid;
