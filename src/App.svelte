@@ -12,19 +12,19 @@
   let lastlocalupdate = 0;
   let lastremoterecording = 0;
   let loaded = false;
+  let wejustgotamessagefromtheserver = false;
   $: {
-    const need_to_send = lastlocalupdate > lastremoterecording;
-    if (loaded) lastlocalupdate = Date.now();
-    if (need_to_send) {
-      set(dbRef, { recordedat: lastlocalupdate, values: tasks.map(({ title, id }) => ({ title, id })) });
-      lastremoterecording = lastlocalupdate;
+    if (loaded && !wejustgotamessagefromtheserver) {
+      lastremoterecording = lastlocalupdate = Date.now();
+      set(dbRef, { recordedat: lastremoterecording, values: tasks.map(({ title, id }) => ({ title, id })) });
     }
+    wejustgotamessagefromtheserver = false;
   }
   lastlocalupdate = 0;
   onDestroy(onValue(dbRef, function(snapshot) {
     const val = snapshot.val();
     loaded = true;
-    if (val === null) return;
+    if (val === null) return; // we're the first ones on this list
     lastremoterecording = val.recordedat;
     if (lastlocalupdate < lastremoterecording) {
       const newtasks = snapshot.val().values.map(({ title, id }) => ({ title, id, selected: false }));
@@ -36,6 +36,7 @@
       tasks = newtasks;
       lastlocalupdate = lastremoterecording;
     }
+    wejustgotamessagefromtheserver = true;
   }))
   let me;
   let height = window.visualViewport.height;
