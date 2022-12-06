@@ -14,40 +14,27 @@
     let em = 16;
     $: dragdistance = currentX - startX;
     $: offset.set((selected ? selected_width * em : 0) + dragdistance);
-
+    $: {
+        console.log(title);
+        if (title === "") dispatch("destroy")
+    }
     function focusOnCreation(el) {
         el.focus();
     }
     let me;
     afterUpdate(() => {
-        // Lol kinda wasteful but whatevs
-        em = parseFloat(getComputedStyle(me).fontSize);
-        if (isNaN(em)) em = 16;
+        if (me) {
+            // Lol kinda wasteful but whatevs
+            em = parseFloat(getComputedStyle(me).fontSize);
+            if (isNaN(em)) em = 16;
+        }
     })
-    function oninput(e: InputEvent) {
-        // As far as I can tell, specifically when:
-        //  - the cursor is at the end of the line
-        //  - it is "connected" to a word
-        //  - and the user presses enter
-        // on android virtual keyboards, we dont get real input events
-        // instead, we received a insertCompositionText with the current content
-        // console.log(e);
-        // if (e.inputType === "insertCompositionText" && typeof e.data === "string" &&
-        //     e.data === title.slice(title.length - e.data.length)
-        // ) {
-        //     e.preventDefault();
-        //     dispatch("gotonext")
-        // }
-    }
-    // svelte doesn't have the right types here
-    const untyped_oninput = oninput as any;
 </script>
 <div>
     <span>✔️</span>
 <input bind:this={me} style="transform: translateX({$offset}px)"
     inputmode="search" 
     
-    on:input={untyped_oninput}
     on:touchstart={e => {
         currentX = startX = e.touches[0].pageX;
     }}
@@ -80,12 +67,6 @@
             if (!(event.shiftKey || event.altKey)) {
                 if (event.ctrlKey) selected = true;
                 else dispatch("gotonext");
-            }
-            break;
-        case "Backspace":
-            if (title === "") {
-                event.preventDefault();
-                dispatch("destroy");
             }
             break;
         default:
