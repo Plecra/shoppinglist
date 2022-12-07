@@ -129,5 +129,6 @@
     flex-direction: column;
     width: 100%;
     overflow: hidden;
+    padding-bottom: calc(6em + env(keyboard-inset-height, 0px));
   }
 </style>
