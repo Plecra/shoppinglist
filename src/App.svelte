@@ -2,6 +2,7 @@
   import { onValue, set, type DatabaseReference } from "firebase/database";
   import { onDestroy } from "svelte";
   import type { Readable } from "svelte/store";
+  import { onMount } from "svelte";
   import Task from "./lib/Task.svelte";
   export let dbRef: DatabaseReference;
   export let connected: Readable<boolean>;
@@ -40,6 +41,41 @@
   }))
   let me;
   let footer;
+  // no idea y, but the browser randomly scrolls to the wrong place. if the element has been thrown off-screen, recenter it
+  // we do this whenever the viewport or focused element changes
+  function ensure_input_in_viewport() {
+    const el = document.activeElement;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const heightoftrueviewport = (window.visualViewport.height - ("virtualKeyboard" in navigator ? navigator.virtualKeyboard.boundingRect.height : 0)) - 60;
+    if (rect.y < 0 || rect.y > heightoftrueviewport)
+        window.scrollTo(0, rect.y + window.visualViewport.pageTop);
+  }
+  let pending = false;
+  function updateheight() {
+    if (pending) return;
+    pending = true;
+    requestAnimationFrame(function() {
+      pending = false;
+      
+      // footer.style.top = `${window.visualViewport.height + window.visualViewport.pageTop - footer.getBoundingClientRect().height}px`;
+      // footer.style.bottom = ``;
+      // footer.style.bottom = `calc(100vh - env(keyboard-inset-bottom, 0px))`;
+      // footer.style.bottom = `calc(100vh - env(keyboard-inset-bottom, 0px))`;
+      ensure_input_in_viewport();
+    });
+  }
+  const aborter = new AbortController();
+  
+  window.visualViewport.addEventListener("resize", updateheight, aborter);
+  window.visualViewport.addEventListener("scroll", updateheight, aborter);
+  window.addEventListener("scroll", updateheight, aborter);
+  onDestroy(function() {
+    aborter.abort();
+  })
+  onMount(() => {
+    updateheight();
+  });
   if ("virtualKeyboard" in navigator) {
     // @ts-ignore
     navigator.virtualKeyboard.overlaysContent = true;
@@ -49,7 +85,7 @@
 {#if !$connected}
   <div class="disconnected">We are not connected</div>
 {/if}
-<main bind:this={me}>
+<main on:focusin={() => setTimeout(() => ensure_input_in_viewport, 160)} bind:this={me}>
   <!-- {#each tasks as { title, selected, id }, i (id)} -->
   {#each tasks as { title, selected, id }, i (id)}
     <Task bind:title bind:selected

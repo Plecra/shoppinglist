@@ -64,17 +64,6 @@
         selected = currentX - startX > selected_width * em;
         startX = currentX = 0;
     }}
-    on:focus={function(e) {
-        
-        // no idea y, but the browser randomly scrolls to the wrong place. if the element has been thrown off-screen, recenter it
-        setTimeout(function() {
-            const rect = e.target.getBoundingClientRect();
-            const heightoftrueviewport = (window.visualViewport.height - ("virtualKeyboard" in navigator ? navigator.virtualKeyboard.boundingRect.height : 0)) - 60;
-            console.log(rect, heightoftrueviewport);
-            if (rect.y < 0 || rect.y > heightoftrueviewport)
-                window.scrollTo(0, rect.y + window.visualViewport.pageTop);
-        }, 260)
-    }}
     use:focusOnCreation
     on:keydown={event => {
         switch (event.key) {
