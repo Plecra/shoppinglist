@@ -73,7 +73,7 @@
             console.log(rect, heightoftrueviewport);
             if (rect.y < 0 || rect.y > heightoftrueviewport)
                 window.scrollTo(0, rect.y + window.visualViewport.pageTop);
-        }, 160)
+        }, 260)
     }}
     use:focusOnCreation
     on:keydown={event => {
