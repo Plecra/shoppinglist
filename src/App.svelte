@@ -48,7 +48,7 @@
     if (!el) return;
     const rect = el.getBoundingClientRect();
     const heightoftrueviewport = (window.visualViewport.height - ("virtualKeyboard" in navigator ? navigator.virtualKeyboard.boundingRect.height : 0)) - 60;
-    if (rect.y < 0 || rect.y > heightoftrueviewport)
+    if (rect.y < 0 || rect.y + rect.height > heightoftrueviewport)
         window.scrollTo(0, rect.y + window.visualViewport.pageTop);
   }
   let pending = false;
