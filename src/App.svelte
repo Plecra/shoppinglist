@@ -48,7 +48,7 @@
     if (!el) return;
     const rect = el.getBoundingClientRect();
     const heightoftrueviewport = (window.visualViewport.height - ("virtualKeyboard" in navigator ? navigator.virtualKeyboard.boundingRect.height : 0)) - 60;
-    if (rect.y < 0 || rect.y + rect.height > heightoftrueviewport)
+    if (rect.y < 0 || (rect.y + rect.height > heightoftrueviewport))
         window.scrollTo(0, rect.y + window.visualViewport.pageTop);
   }
   let pending = false;
@@ -58,18 +58,13 @@
     requestAnimationFrame(function() {
       pending = false;
       
-      // footer.style.top = `${window.visualViewport.height + window.visualViewport.pageTop - footer.getBoundingClientRect().height}px`;
-      // footer.style.bottom = ``;
-      // footer.style.bottom = `calc(100vh - env(keyboard-inset-bottom, 0px))`;
-      // footer.style.bottom = `calc(100vh - env(keyboard-inset-bottom, 0px))`;
       ensure_input_in_viewport();
     });
   }
   const aborter = new AbortController();
   
   window.visualViewport.addEventListener("resize", updateheight, aborter);
-  window.visualViewport.addEventListener("scroll", updateheight, aborter);
-  window.addEventListener("scroll", updateheight, aborter);
+  window.addEventListener("resize", updateheight, aborter);
   onDestroy(function() {
     aborter.abort();
   })
@@ -77,15 +72,25 @@
     updateheight();
   });
   if ("virtualKeyboard" in navigator) {
+    
     // @ts-ignore
     navigator.virtualKeyboard.overlaysContent = true;
+    let height = navigator.virtualKeyboard.boundingRect.height;
+    // @ts-ignore
+    navigator.virtualKeyboard.addEventListener("geometrychange", function() {
+      const newheight = navigator.virtualKeyboard.boundingRect.height;
+      if (newheight !== height) {
+        ensure_input_in_viewport();
+      }
+      height = newheight;
+    }, aborter)
   }
 </script>
 
 {#if !$connected}
   <div class="disconnected">We are not connected</div>
 {/if}
-<main on:focusin={() => setTimeout(() => ensure_input_in_viewport, 160)} bind:this={me}>
+<main on:focusin={() => setTimeout(() => ensure_input_in_viewport(), 160)} bind:this={me}>
   <!-- {#each tasks as { title, selected, id }, i (id)} -->
   {#each tasks as { title, selected, id }, i (id)}
     <Task bind:title bind:selected
