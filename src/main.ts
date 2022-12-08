@@ -1,29 +1,34 @@
 import './app.css'
-import App from './App.svelte'
-import { initializeApp } from "firebase/app";
-import { getDatabase, ref, push, set, onValue } from "firebase/database";
-import { readable } from 'svelte/store';
+import { installHandlers } from "./lib/handlers";
+import { value_update } from './lib/util';
 
-const firebaseApp = initializeApp({
-  databaseURL: "https://shoppinglist-31849-default-rtdb.europe-west1.firebasedatabase.app/",
-});
-const database = getDatabase(firebaseApp);
-const refname = import.meta.env.DEV ? "devitems" : "items";
-const items = ref(database, refname);
-// const new_item = push(items);
-// set(new_item, "Apples");
-const connected = readable(false,  function(set) {
-  return onValue(ref(database, "/.info/connected"), function(snapshot) {
-    set(snapshot.val())
+const list = document.createElement("ol");
+list.contentEditable = "true";
+
+// App invariant: at the end of every event, we have a DOM such that
+// <ol contenteditable>
+//   for (item of items) <li>if (item === "") <br/> else ${item}</li>
+// </ol>
+const items = [""];
+value_update(["items", 0], "insert", null);
+
+let controller = new AbortController();
+installHandlers(list, items, controller.signal)
+if (import.meta.hot) {
+  type InstallHandlers = typeof installHandlers;
+  import.meta.hot.accept("./lib/handlers", namespace => {
+    const installHandlers: InstallHandlers = namespace?.installHandlers;
+    controller.abort();
+    controller = new AbortController();
+    installHandlers(list, items, controller.signal);
   })
-});
-const app = document.createElement('div');
-new App({ target: app, props: { dbRef: items, connected } });
+}
 
 if (document.readyState === "loading") document.addEventListener("readystatechange", ready, { once: true })
 else ready.call(document, null)
 
-function ready(_) {
-  this.body.append(app);
+function ready(this: Document, _: unknown) {
+  this.body.append(list);
+  list.dispatchEvent(new Event("mount"));
 }
 

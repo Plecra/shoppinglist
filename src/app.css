@@ -1,3 +1,14 @@
 body {
   margin: 0;
+  font-size: 1.8em;
+}
+div {
+  width: 100%;
+  overflow: hidden;
+}
+li {
+  padding: 0.4em;
+}
+[contenteditable] {
+  outline: none;
 }
