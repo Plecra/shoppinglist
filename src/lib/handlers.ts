@@ -43,7 +43,6 @@ function dragitems(_: unknown) {
 function rebuild_list(list: HTMLOListElement, items: string[]) {
     list.replaceChildren(...items.map(item => {
         const node = document.createElement("li");
-        node.draggable = true;
         node.appendChild(item === "" ? document.createElement("br") : document.createTextNode(item));
         return node;
     }));
