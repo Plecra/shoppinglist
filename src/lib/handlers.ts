@@ -47,10 +47,14 @@ function dragitems(_: unknown, signal: AbortSignal) {
                 e.preventDefault();
                 const li = this.childNodes[dragging];
                 if (!(li instanceof HTMLLIElement)) unexpected("corrupted DOM");
-                li.style.transform = `translate(${diffX}px,${diffY}px) scale(120%)`;
+                li.style.transform = `translate(${diffX}px,${diffY}px)`;
+                li.style.pointerEvents = "none";
             } else if (diffX ** 2 + diffY ** 2 > Math.sqrt(12)) cancel_drag(this);
         },
-        touchend(this: HTMLOListElement, e: unknown) {
+        touchend(this: HTMLOListElement, e: TouchEvent) {
+            const { clientX, clientY } = e.changedTouches[0];
+
+            console.log(this.childNodes[dragging], document.elementFromPoint(clientX, clientY));
             cancel_drag(this);
         },
     }
