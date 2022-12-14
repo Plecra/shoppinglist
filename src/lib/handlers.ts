@@ -1,16 +1,31 @@
 import { unexpected, get_line, range_to_span, type CursorPosition, value_update } from "./util"
 
-function dragitems(_: unknown) {
+function dragitems(_: unknown, signal: AbortSignal) {
     let startX = 0, startY = 0;
     let dragging = -1;
     let dragstart = 0;
+    let scroll_speed = 0;
     function cancel_drag(list: HTMLOListElement) {
         if (dragging === -1) return;
         const li = list.childNodes[dragging];
         if (!(li instanceof HTMLLIElement)) unexpected("corrupted DOM");
         dragging = -1;
+        scroll_speed = 0;
         li.style.transform = "";
+        li.style.pointerEvents = "";
     }
+    let last_frame = performance.now();
+    let frame_loop = requestAnimationFrame(frame);
+    function frame(frame_time: number) {
+        frame_loop = requestAnimationFrame(frame);
+        if (scroll_speed) {
+            document.documentElement.scrollTop += ((frame_time - last_frame) / 1000) * scroll_speed;
+        }
+        last_frame = frame_time;
+    }
+    signal.addEventListener("abort", function() {
+        cancelAnimationFrame(frame_loop);
+    });
     return {
         touchstart(e: TouchEvent) {
             if (e.touches.length !== 1) return;
@@ -25,6 +40,7 @@ function dragitems(_: unknown) {
             if (e.touches.length !== 1) cancel_drag(this);
             if (dragging === -1) return;
             const { pageX, pageY } = e.touches[0];
+            scroll_speed = e.touches[0].clientY < 20 ? -400 : 0;
             const diffX = pageX - startX;
             const diffY = pageY - startY;
             if (performance.now() - dragstart > 150) {
@@ -141,9 +157,9 @@ function build(items: string[]) {
     };
 }
 type EventMap = HTMLElementEventMap & { input: InputEvent, mount: Event };
-const builders: ((items: string[]) => ({ [K in keyof EventMap]?: (this: HTMLOListElement, event: EventMap[K]) => void }))[] = [build, inputhandling, dragitems];
+const builders: ((items: string[], signal: AbortSignal) => ({ [K in keyof EventMap]?: (this: HTMLOListElement, event: EventMap[K]) => void }))[] = [build, inputhandling, dragitems];
 export function installHandlers(list: HTMLOListElement, data: string[], signal: AbortSignal) {
     for (const component of builders)
-        for (const [key, value] of Object.entries(component(data)))
+        for (const [key, value] of Object.entries(component(data, signal)))
             list.addEventListener(key, value as any, { signal })
 }
