@@ -1,3 +1,4 @@
+import { Database, onChildAdded, ref } from "firebase/database";
 import { unexpected, get_line, range_to_span, type CursorPosition, value_update } from "./util"
 
 function dragitems(_: unknown, signal: AbortSignal) {
@@ -53,7 +54,7 @@ function dragitems(_: unknown, signal: AbortSignal) {
         },
         touchend(this: HTMLOListElement, e: TouchEvent) {
             const { clientX, clientY } = e.changedTouches[0];
-
+            
             console.log(this.childNodes[dragging], document.elementFromPoint(clientX, clientY));
             cancel_drag(this);
         },
@@ -67,7 +68,7 @@ function rebuild_list(list: HTMLOListElement, items: string[]) {
         return node;
     }));
 }
-function inputhandling(items: string[]) {
+function inputhandling(items: string[], _: AbortSignal, database: Database) {
     const text_class = "a-zA-Z0-9 '\\[\\]£#/!?,.";
     const is_text = new RegExp(`^[${text_class}]*$`);
     const is_text_or_newline = new RegExp(`^[${text_class}\\n]*$`);
@@ -117,7 +118,13 @@ function inputhandling(items: string[]) {
         sel.addRange(range);
     }
 
-
+    onChildAdded(ref(database, "devlog"), function(snapshot, prev) {
+        if (prev)
+            console.log(document.querySelector(`ol[contenteditable] li[data-id=${JSON.stringify(prev)}]`));
+            else {
+                console.log("starter")
+            }
+    })
     return {
         beforeinput(_: unknown) {
             previous_position = range_to_span(current_range());
@@ -161,9 +168,9 @@ function build(items: string[]) {
     };
 }
 type EventMap = HTMLElementEventMap & { input: InputEvent, mount: Event };
-const builders: ((items: string[], signal: AbortSignal) => ({ [K in keyof EventMap]?: (this: HTMLOListElement, event: EventMap[K]) => void }))[] = [build, inputhandling, dragitems];
-export function installHandlers(list: HTMLOListElement, data: string[], signal: AbortSignal) {
+const builders: ((items: string[], signal: AbortSignal, database: Database) => ({ [K in keyof EventMap]?: (this: HTMLOListElement, event: EventMap[K]) => void }))[] = [build, inputhandling, dragitems];
+export function installHandlers(list: HTMLOListElement, data: string[], signal: AbortSignal, database: Database) {
     for (const component of builders)
-        for (const [key, value] of Object.entries(component(data, signal)))
+        for (const [key, value] of Object.entries(component(data, signal, database)))
             list.addEventListener(key, value as any, { signal })
 }

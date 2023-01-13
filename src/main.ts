@@ -1,29 +1,23 @@
+import { initializeApp } from "firebase/app";
+import {  getDatabase, push, ref, remove, set, setWithPriority } from "firebase/database";
+
 import './app.css'
-import { installHandlers } from "./lib/handlers";
-import { value_update } from './lib/util';
+import { bind_to_list } from "./lib/listbind";
+
+
+const firebaseApp = initializeApp({
+  databaseURL: "https://shoppinglist-31849-default-rtdb.europe-west1.firebasedatabase.app/",
+});
+const database = getDatabase(firebaseApp);
 
 const list = document.createElement("ol");
 list.contentEditable = "true";
 
-// App invariant: at the end of every event, we have a DOM such that
-// <ol contenteditable>
-//   for (item of items) <li>if (item === "") <br/> else ${item}</li>
-// </ol>
-const items = [""];
-value_update(["items", 0], "insert", null);
-
-let controller = new AbortController();
-installHandlers(list, items, controller.signal)
-if (import.meta.hot) {
-  type InstallHandlers = typeof installHandlers;
-  import.meta.hot.accept("./lib/handlers", namespace => {
-    const installHandlers: InstallHandlers = namespace?.installHandlers;
-    controller.abort();
-    controller = new AbortController();
-    installHandlers(list, items, controller.signal);
-  })
-}
-
+bind_to_list(list, ref(database, "testspace"))
+// remove(ref(database, "testspace"))
+// set(push(ref(database, "testspace")), { title: "one", priority: 0.25 })
+// set(push(ref(database, "testspace")), { title: "two", priority: 0.5 })
+// set(push(ref(database, "testspace")), { title: "three", priority: 0.75 })
 if (document.readyState === "loading") document.addEventListener("readystatechange", ready, { once: true })
 else ready.call(document, null)
 
